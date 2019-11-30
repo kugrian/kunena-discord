@@ -37,16 +37,34 @@
 		<fields name="params">
 			<fieldset name="basic">
 				<field
-					name="webhook"
+					name="webhook_p"
 					type="url"
 					default=""
-					label="PLG_KUNENA_DISCORD_WEBHOOK_LABEL"
+					label="PLG_KUNENA_DISCORD_WEBHOOK_LABEL_PLAYER"
+					description="PLG_KUNENA_DISCORD_WEBHOOK_DESCRIPTION"
+				/>
+			</fieldset>
+			<fieldset name="basic">
+				<field
+					name="webhook_m"
+					type="url"
+					default=""
+					label="PLG_KUNENA_DISCORD_WEBHOOK_LABEL_MENTOR"
+					description="PLG_KUNENA_DISCORD_WEBHOOK_DESCRIPTION"
+				/>
+			</fieldset>
+			<fieldset name="basic">
+				<field
+					name="webhook_c"
+					type="url"
+					default=""
+					label="PLG_KUNENA_DISCORD_WEBHOOK_LABEL_CREATOR"
 					description="PLG_KUNENA_DISCORD_WEBHOOK_DESCRIPTION"
 				/>
 			</fieldset>
 		</fields>
 	</config>
 	<updateservers>
-		<server type="extension" priority="1" name="Kunena-Discord Update Site">https://raw.githubusercontent.com/pfitzer/kunena-discord/master/plg_kunenadiscord.xml</server>
+		<server type="extension" priority="1" name="Kunena-Discord Update Site">https://raw.githubusercontent.com/kugrian/kunena-discord/master/plg_kunenadiscord.xml</server>
 	</updateservers>
 </extension>

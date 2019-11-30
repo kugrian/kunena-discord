@@ -28,7 +28,7 @@ class plgKunenaDiscord extends CMSPlugin
 	 */
 	protected $autoloadLanguage = true;
 
-	protected $webhook;
+	protected $webhooks = array();
 
     /**
      * plgSystemKunenaDiscord constructor.
@@ -38,9 +38,11 @@ class plgKunenaDiscord extends CMSPlugin
     public function __construct($subject, array $config = array())
     {
         parent::__construct($subject, $config);
-        $this->webhook = $this->params->get('webhook');
-        if (!$this->webhook) {
-            throw new InvalidArgumentException("Webhook can`t be null. Please configure a webhhok.");
+        $this->webhooks["player"] = $this->params->get('webhook_p');
+        $this->webhooks["creator"] = $this->params->get('webhook_c');
+        $this->webhooks["mentor"] = $this->params->get("webhook_m");
+        if (!sizeof($this->webhooks)) {
+            throw new InvalidArgumentException("Webhook can`t be null. Please configure a webhook.");
         }
     }
 
@@ -53,7 +55,7 @@ class plgKunenaDiscord extends CMSPlugin
     public function onKunenaGetActivity()
     {
         require_once __DIR__ . "/push.php";
-        return new KunenaDiscord($this->webhook);
+        return new KunenaDiscord($this->webhooks);
     }
 
 }

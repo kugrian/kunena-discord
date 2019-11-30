@@ -24,7 +24,7 @@ class KunenaDiscord extends KunenaActivity
     /**
      * @var null
      */
-    private $webhook = null;
+    private $webhooks = array();
 
     /**
      * @var \Joomla\CMS\Language\Language
@@ -38,12 +38,12 @@ class KunenaDiscord extends KunenaActivity
 
     /**
      * KunenaDiscord constructor.
-     * @param $webhook
+     * @param $webhooks
      * @throws Exception
      */
-    public function __construct($webhook)
+    public function __construct($webhooks)
     {
-        $this->webhook = $webhook;
+        $this->webhooks = $webhooks;
         $this->lang = JFactory::getLanguage();
         $this->lang->load('plg_kunena_discord', JPATH_ADMINISTRATOR);
         $this->app = JFactory::getApplication();
@@ -84,13 +84,12 @@ class KunenaDiscord extends KunenaActivity
             return false;
         }
 
-        // FIXME: Joomla 2.5 can mix up groups and access levels
-        if ($accesstype == 'joomla.level' && $category->access <= 2) {
-            return true;
-        } elseif ($category->pub_access == 1 || $category->pub_access == 2) {
-            return true;
-        } elseif ($category->admin_access == 1 || $category->admin_access == 2) {
-            return true;
+        if ($accesstype == "joomla.level") {
+            switch($category->access) {
+                case 5 : return "player";
+                case 7 : return "creator";
+                case 8 : return "mentor";
+            }
         }
 
         return false;
@@ -101,7 +100,7 @@ class KunenaDiscord extends KunenaActivity
      * @param $url
      * @param KunenaForumMessage $message
      */
-    private function _send_message($pushMessage, $url, $message)
+    private function _send_message($pushMessage, $url, $message, $allowed)
     {
         $content = '**' . $pushMessage . '** *' . $message->subject . '* [Link](' . $url . ')';
         $hookObject = json_encode([
@@ -120,7 +119,7 @@ class KunenaDiscord extends KunenaActivity
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $request = new Http();
-        $response = $request->post($this->webhook, utf8_encode($hookObject), ['Content-Type' => 'application/json']);
+        $response = $request->post($this->webhooks[$allowed], utf8_encode($hookObject), ['Content-Type' => 'application/json']);
         if ($response->code != 204) {
             $body = json_decode($response->body);
             $this->app->enqueueMessage(JText::_('PLG_KUNENA_DISCORD_ERROR') . ' ' . $body->message, 'Warning');
@@ -133,13 +132,14 @@ class KunenaDiscord extends KunenaActivity
      */
     private function _prepareAndSend($message, $translatedMsg)
     {
-        if ($this->_checkPermissions($message)) {
+        $allowed = $this->_checkPermissions($message);
+        if ($allowed) {
             $pushMessage = sprintf($translatedMsg, $message->subject);
             try {
                 $url = htmlspecialchars_decode(JUri::base()
                     . mb_substr($message->getPermaUrl(), 1)
                     . '#' . $message->id);
-                $this->_send_message($pushMessage, $url, $message);
+                $this->_send_message($pushMessage, $url, $message, $allowed);
             } catch (Exception $e) {
                 $this->app->enqueueMessage(JText::_('PLG_KUNENA_DISCORD_ERROR'), 'error');
             }
